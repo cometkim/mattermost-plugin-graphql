@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+
 	"github.com/graphql-go/graphql"
 )
 
@@ -40,11 +42,19 @@ var userType = graphql.NewObject(
 )
 
 func (p *GraphQLPlugin) resolveUser(param graphql.ResolveParams) (interface{}, error) {
-	user, err := p.API.GetUser(param.Args["id"].(string))
-	if err != nil {
-		return nil, err
+	id, _ := param.Args["id"].(string)
+	username, _ := param.Args["username"].(string)
+	email, _ := param.Args["email"].(string)
+
+	if len(id) > 0 {
+		return p.API.GetUser(id)
+	} else if len(username) > 0 {
+		return p.API.GetUserByUsername(username)
+	} else if len(email) > 0 {
+		return p.API.GetUserByEmail(email)
+	} else {
+		return nil, errors.New("Argument must contains one of {id, username, email}")
 	}
-	return user, nil
 }
 
 func (p *GraphQLPlugin) resolveCurrentUser(param graphql.ResolveParams) (interface{}, error) {
@@ -65,7 +75,13 @@ func (p *GraphQLPlugin) initSchema() (graphql.Schema, error) {
 					Type: userType,
 					Args: graphql.FieldConfigArgument{
 						"id": &graphql.ArgumentConfig{
-							Type: graphql.NewNonNull(graphql.String),
+							Type: graphql.String,
+						},
+						"username": &graphql.ArgumentConfig{
+							Type: graphql.String,
+						},
+						"email": &graphql.ArgumentConfig{
+							Type: graphql.String,
 						},
 					},
 					Resolve: p.resolveUser,
