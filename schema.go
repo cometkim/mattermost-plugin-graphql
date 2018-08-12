@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/graphql-go/graphql"
+	"github.com/mattermost/mattermost-server/model"
 )
 
 var userType = graphql.NewObject(
@@ -29,13 +30,10 @@ var userType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"createAt": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.DateTime),
+				Type: graphql.Int,
 			},
 			"updateAt": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.DateTime),
-			},
-			"lastPasswordUpdateAt": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.DateTime),
+				Type: graphql.Int,
 			},
 		},
 	},
@@ -46,15 +44,24 @@ func (p *GraphQLPlugin) resolveUser(param graphql.ResolveParams) (interface{}, e
 	username, _ := param.Args["username"].(string)
 	email, _ := param.Args["email"].(string)
 
+	var user *model.User
+	var err *model.AppError
+
 	if len(id) > 0 {
-		return p.API.GetUser(id)
+		user, err = p.API.GetUser(id)
 	} else if len(username) > 0 {
-		return p.API.GetUserByUsername(username)
+		user, err = p.API.GetUserByUsername(username)
 	} else if len(email) > 0 {
-		return p.API.GetUserByEmail(email)
+		user, err = p.API.GetUserByEmail(email)
 	} else {
-		return nil, errors.New("Argument must contains one of {id, username, email}")
+		return nil, errors.New("Arguments must contain one of {id, username, email}")
 	}
+
+	// I don't understand why `return user, err` will dereferences null
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func (p *GraphQLPlugin) resolveCurrentUser(param graphql.ResolveParams) (interface{}, error) {
