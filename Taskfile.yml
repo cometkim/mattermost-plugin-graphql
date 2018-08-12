@@ -1,0 +1,12 @@
+version: '2'
+
+tasks:
+  build:
+    cmds:
+      - task: deps
+      - go build -o plugin.bin *.go
+      - tar czvf mattermost-plugin-graphql_{{OS}}-{{ARCH}}.tar.gz plugin.bin plugin.yml
+
+  deps:
+    cmds:
+      - go get

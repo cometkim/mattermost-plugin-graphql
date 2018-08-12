@@ -1,0 +1,4 @@
+id: kr.cometkim.mattermost-plugin-graphql
+name: GraphQL API Endpoint
+backend:
+    executable: plugin.bin
