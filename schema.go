@@ -9,19 +9,31 @@ var userType = graphql.NewObject(
 		Name: "User",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
-				Type: graphql.String,
+				Type: graphql.NewNonNull(graphql.String),
 			},
 			"username": &graphql.Field{
-				Type: graphql.String,
+				Type: graphql.NewNonNull(graphql.String),
 			},
 			"email": &graphql.Field{
-				Type: graphql.String,
+				Type: graphql.NewNonNull(graphql.String),
 			},
 			"firstname": &graphql.Field{
 				Type: graphql.String,
 			},
 			"lastname": &graphql.Field{
 				Type: graphql.String,
+			},
+			"nickname": &graphql.Field{
+				Type: graphql.String,
+			},
+			"createAt": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.DateTime),
+			},
+			"updateAt": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.DateTime),
+			},
+			"lastPasswordUpdateAt": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.DateTime),
 			},
 		},
 	},
