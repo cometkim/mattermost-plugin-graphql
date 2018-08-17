@@ -65,8 +65,7 @@ func (p *GraphQLPlugin) resolveUser(param graphql.ResolveParams) (interface{}, e
 }
 
 func (p *GraphQLPlugin) resolveCurrentUser(param graphql.ResolveParams) (interface{}, error) {
-	session, _ := p.API.GetSession(param.Context.Value(ContextSessionId).(string))
-	user, err := p.API.GetUser(session.UserId)
+	user, err := p.API.GetUser(param.Context.Value(ContextCurrentUserId).(string))
 	if err != nil {
 		return nil, err
 	}

@@ -7,5 +7,6 @@ func (key contextKey) String() string {
 }
 
 const (
-	ContextSessionId = contextKey("sessionId")
+	ContextSessionId     = contextKey("sessionId")
+	ContextCurrentUserId = contextKey("currentUserId")
 )

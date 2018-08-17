@@ -15,9 +15,8 @@ type GraphQLPlugin struct {
 
 func (p *GraphQLPlugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	// `c.SessionId` appears to be valid only on first call
-	// p.API.LogDebug("debug", "session_id", c.SessionId)
 	ctx = context.WithValue(ctx, ContextSessionId, c.SessionId)
+	ctx = context.WithValue(ctx, ContextCurrentUserId, r.Header.Get("Mattermost-User-Id"))
 
 	p.handler.ContextHandler(ctx, w, r)
 }
