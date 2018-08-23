@@ -1,79 +1,108 @@
 package main
 
 import (
-	"errors"
+	"time"
 
 	"github.com/graphql-go/graphql"
-	"github.com/mattermost/mattermost-server/model"
 )
 
-var userType = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "User",
-		Fields: graphql.Fields{
-			"id": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
+var (
+	userType *graphql.Object
+	teamType *graphql.Object
+
+	dateScalar = graphql.NewScalar(
+		graphql.ScalarConfig{
+			Name: "Date",
+			Serialize: func(value interface{}) interface{} {
+				switch v := value.(type) {
+				case time.Time:
+					return v.String()
+				default:
+					return nil
+				}
 			},
-			"username": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-			},
-			"email": &graphql.Field{
-				Type: graphql.NewNonNull(graphql.String),
-			},
-			"firstname": &graphql.Field{
-				Type: graphql.String,
-			},
-			"lastname": &graphql.Field{
-				Type: graphql.String,
-			},
-			"nickname": &graphql.Field{
-				Type: graphql.String,
-			},
-			"createAt": &graphql.Field{
-				Type: graphql.Int,
-			},
-			"updateAt": &graphql.Field{
-				Type: graphql.Int,
+			ParseValue: func(value interface{}) interface{} {
+				switch v := value.(type) {
+				case int64:
+					return time.Unix(0, v*int64(time.Millisecond))
+				default:
+					return nil
+				}
 			},
 		},
-	},
+	)
 )
 
-func (p *GraphQLPlugin) resolveUser(param graphql.ResolveParams) (interface{}, error) {
-	id, _ := param.Args["id"].(string)
-	username, _ := param.Args["username"].(string)
-	email, _ := param.Args["email"].(string)
-
-	var user *model.User
-	var err *model.AppError
-
-	if len(id) > 0 {
-		user, err = p.API.GetUser(id)
-	} else if len(username) > 0 {
-		user, err = p.API.GetUserByUsername(username)
-	} else if len(email) > 0 {
-		user, err = p.API.GetUserByEmail(email)
-	} else {
-		return nil, errors.New("Arguments must contain one of {id, username, email}")
-	}
-
-	// I don't understand why `return user, err` will dereferences null
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
-func (p *GraphQLPlugin) resolveCurrentUser(param graphql.ResolveParams) (interface{}, error) {
-	user, err := p.API.GetUser(param.Context.Value(ContextCurrentUserId).(string))
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
 func (p *GraphQLPlugin) initSchema() (graphql.Schema, error) {
-	var queryType = graphql.NewObject(
+	userType = graphql.NewObject(
+		graphql.ObjectConfig{
+			Name: "User",
+			Fields: graphql.Fields{
+				"id": &graphql.Field{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"username": &graphql.Field{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"email": &graphql.Field{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"firstname": &graphql.Field{
+					Type: graphql.String,
+				},
+				"lastname": &graphql.Field{
+					Type: graphql.String,
+				},
+				"nickname": &graphql.Field{
+					Type: graphql.String,
+				},
+				"createAt": &graphql.Field{
+					Type: graphql.NewNonNull(dateScalar),
+				},
+				"updateAt": &graphql.Field{
+					Type: graphql.NewNonNull(dateScalar),
+				},
+			},
+		},
+	)
+
+	teamType = graphql.NewObject(
+		graphql.ObjectConfig{
+			Name: "Team",
+			Fields: graphql.Fields{
+				"id": &graphql.Field{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"name": &graphql.Field{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"displayName": &graphql.Field{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"description": &graphql.Field{
+					Type: graphql.String,
+				},
+				"createAt": &graphql.Field{
+					Type: graphql.NewNonNull(dateScalar),
+				},
+				"updateAt": &graphql.Field{
+					Type: graphql.NewNonNull(dateScalar),
+				},
+			},
+		},
+	)
+
+	userType.AddFieldConfig("joinedTeams", &graphql.Field{
+		Type:    graphql.NewList(teamType),
+		Resolve: p.resolveTeamsForUser,
+	})
+
+	teamType.AddFieldConfig("owner", &graphql.Field{
+		Type:    graphql.NewNonNull(userType),
+		Resolve: p.resolveTeamOwner,
+	})
+
+	queryType := graphql.NewObject(
 		graphql.ObjectConfig{
 			Name: "Query",
 			Fields: graphql.Fields{
@@ -95,6 +124,10 @@ func (p *GraphQLPlugin) initSchema() (graphql.Schema, error) {
 				"me": &graphql.Field{
 					Type:    userType,
 					Resolve: p.resolveCurrentUser,
+				},
+				"allTeams": &graphql.Field{
+					Type:    graphql.NewList(teamType),
+					Resolve: p.resolveAllTeams,
 				},
 			},
 		},
