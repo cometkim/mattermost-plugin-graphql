@@ -1,0 +1,1 @@
+# Mattermost GraphQL Plugin Example
