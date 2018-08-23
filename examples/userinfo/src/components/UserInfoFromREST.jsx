@@ -87,22 +87,26 @@ export default class UserInfoFromREST extends React.PureComponent {
     }
 
     render() {
+        const elapsedMillis = this.state.end - this.state.start
+
         return (
-            <Example name="JSON API Example" execute={this.fetchUserInfo}>
-                {this.state.start && this.state.end ? (
-                    <div className="trace">
-                        Elapsed
-                        <time className="trace__time">
-                            {this.state.end - this.state.start}
-                        </time>
-                        millis
-                        <div className="trace__count">
-                            {this.state.count} queries
+            <div class="jsonapi-example">
+                <Example name="JSON API Example" execute={this.fetchUserInfo}>
+                    {elapsedMillis > 0 && (
+                        <div className="trace">
+                            Elapsed
+                            <time className={`trace__time ${elapsedMillis > 100 ? 'danger' : ''}`}>
+                                {elapsedMillis}
+                            </time>
+                            millis
+                            <div className="trace__count">
+                                {this.state.count} queries
+                            </div>
                         </div>
-                    </div>
-                ) : null}
-                {this.state.user && <UserInfo {...this.state.user} />}
-            </Example>
+                    )}
+                    {this.state.user && <UserInfo {...this.state.user} />}
+                </Example>
+            </div>
         )
     }
 }

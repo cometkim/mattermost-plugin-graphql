@@ -66,18 +66,24 @@ export default class UserInfoFromGraphQL extends React.PureComponent {
     }
 
     render() {
+        const elapsedMillis = this.state.end - this.state.start
+
         return (
-            <Example name="GraphQL Example" execute={this.fetchUserInfo}>
-                {this.state.start && this.state.end ? (
-                    <div className="trace">
-                        Elapsed
-                        <time>{this.state.end - this.state.start}</time>
-                        millis
-                        <div className="trance__count">Only 1 query!!</div>
-                    </div>
-                ) : null}
-                {this.state.user && <UserInfo {...this.state.user} />}
-            </Example>
+            <div className="graphql-example">
+                <Example name="GraphQL Example" execute={this.fetchUserInfo}>
+                    {elapsedMillis > 0 && (
+                        <div className="trace">
+                            Elapsed
+                            <time className={`trace__time ${elapsedMillis > 100 ? 'danger' : ''}`}>
+                                {elapsedMillis}
+                            </time>
+                            millis
+                            <div className="trace__count">Only 1 query!!</div>
+                        </div>
+                    )}
+                    {this.state.user && <UserInfo {...this.state.user} />}
+                </Example>
+            </div>
         )
     }
 }

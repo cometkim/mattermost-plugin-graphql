@@ -7,6 +7,8 @@ body,
 
 $primary: #0065b8;
 $gray: rgba(60, 60, 60, 0.4);
+$success: #00ce6c;
+$danger: #ff2c61;
 
 .container {
     display: flex;
@@ -100,5 +102,24 @@ $gray: rgba(60, 60, 60, 0.4);
     }
     &__owner-name {
         font-size: 0.8rem;
+    }
+}
+
+.trace {
+    &__time {
+        margin: 0 0.2rem;
+        font-weight: bold;
+        &.danger {
+            color: $danger;
+        }
+    }
+    &__count {
+        font-weight: bold;
+        .jsonapi-example & {
+            color: $danger;
+        }
+        .graphql-example & {
+            color: $success;
+        }
     }
 }
