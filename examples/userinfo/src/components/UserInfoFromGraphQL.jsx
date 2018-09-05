@@ -36,7 +36,7 @@ export default class UserInfoFromGraphQL extends React.PureComponent {
     }
 
     fetchUserInfo = async () => {
-        this.traceStart()
+        await this.traceStart()
 
         const { data } = await this.client.query({
             query: gql`
@@ -58,7 +58,7 @@ export default class UserInfoFromGraphQL extends React.PureComponent {
             `,
         })
 
-        this.traceEnd()
+        await this.traceEnd()
 
         this.setState({
             user: data.me,
