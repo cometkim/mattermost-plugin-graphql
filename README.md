@@ -1,5 +1,7 @@
 # Mattermost GraphQL API Plugin
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/cometkim/mattermost-plugin-graphql.svg)](https://greenkeeper.io/)
+
 A plugin for adding GraphQL API to your Mattermost server.
 
 ## Motivation
